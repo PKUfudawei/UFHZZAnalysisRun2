@@ -92,8 +92,6 @@
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
 #include "PhysicsTools/SelectorUtils/interface/JetIDSelectionFunctor.h"
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
-#include "PhysicsTools/JetMCUtils/interface/CandMCTag.h"
-#include "DataFormats/Candidate/interface/VertexCompositePtrCandidate.h"
 
 // Reco
 #include "DataFormats/VertexReco/interface/Vertex.h"
@@ -106,8 +104,6 @@
 #include "DataFormats/HLTReco/interface/TriggerEvent.h"
 #include "DataFormats/CaloTowers/interface/CaloTowerCollection.h"
 #include "RecoVertex/VertexTools/interface/VertexDistance3D.h"
-#include "RecoVertex/VertexTools/interface/VertexDistanceXY.h"
-#include "DataFormats/GeometryCommonDetAlgo/interface/Measurement1D.h"
 
 // KD's
 #include "JHUGenMELA/MELA/interface/Mela.h"
@@ -400,8 +396,6 @@ private:
     int jet1index, jet2index, jet1index_2p5, jet2index_2p5;
     vector<double> jet_pt; vector<double> jet_eta; vector<double> jet_phi; vector<double> jet_mass; vector<double> jet_pt_raw;
     vector<float>  jet_pumva, jet_csvv2,  jet_csvv2_; vector<int> jet_isbtag;
-    vector<float>  jet_DeepJet_b, jet_DeepJet_bb, jet_DeepJet_lepb, jet_DeepJet_c, jet_DeepJet_uds, jet_DeepJet_g, jet_DeepJet_CvsL, jet_DeepJet_CvsB;
-    vector<float>  jet_ParticleNet_b, jet_ParticleNet_bb, jet_ParticleNet_c, jet_ParticleNet_cc, jet_ParticleNet_uds, jet_ParticleNet_g, jet_ParticleNet_undef, jet_ParticleNet_pu, jet_ParticleNet_CvsL, jet_ParticleNet_CvsB;
     vector<int>    jet_hadronFlavour, jet_partonFlavour;
     vector<float>  jet_QGTagger, jet_QGTagger_jesup, jet_QGTagger_jesdn;
     vector<float> jet_axis2, jet_ptD; vector<int> jet_mult;
@@ -439,12 +433,6 @@ private:
     float absdeltarapidity_hleadingjet_pt30_eta4p7_jesup; float absdeltarapidity_hleadingjet_pt30_eta4p7_jesdn;
     float absdeltarapidity_hleadingjet_pt30_eta4p7_jerup; float absdeltarapidity_hleadingjet_pt30_eta4p7_jerdn;
     float DijetMass, DijetDEta, DijetFisher;
-
-    // SV
-    vector<float>  sv_pt, sv_eta, sv_phi, sv_mass, sv_energy, sv_ntracks;
-    vector<float>  sv_normchi2, sv_dxy, sv_dxysig, sv_d3d, sv_d3dsig, sv_costhetasvpv;
-    vector<float>  sv_genflavour, sv_nbhadrons, sv_nchadrons;
-    vector<float>  sv_ParticleNet_b, sv_ParticleNet_bb, sv_ParticleNet_c, sv_ParticleNet_cc, sv_ParticleNet_unmat;
 
     // n-jettiness for additional ak4 jets
     float TauC_Inc_0j, TauC_JetConstituents_0j, TauCnoHRapidity_JetConstituents_0j, TauCnoHRapidity_Inc_0j;
@@ -809,11 +797,6 @@ _EnergyWgt
     // Higgs variables directly from GEN particle
     float GENHmass;
     
-    // GEN particles
-    vector<double> GENPart_pt; vector<double> GENPart_eta; vector<double> GENPart_phi; vector<double> GENPart_mass;
-    vector<int> GENPart_id; vector<int> GENPart_status;
-    vector<bool> GENPart_isExcite; vector<bool> GENPart_isCFromBHad;
-    
     // Jets
     vector<double> GENjet_pt; vector<double> GENjet_eta; vector<double> GENjet_phi; vector<double> GENjet_mass;
     int GENnjets_pt30_eta4p7; float GENpt_leadingjet_pt30_eta4p7;
@@ -981,8 +964,6 @@ _EnergyWgt
     vector<float> GENH_phi_float, GENH_mass_float;
     vector<float> GENZ_pt_float, GENZ_eta_float;
     vector<float> GENZ_phi_float, GENZ_mass_float;
-    vector<float> GENPart_pt_float, GENPart_eta_float;
-    vector<float> GENPart_phi_float, GENPart_mass_float;
     vector<float> GENjet_pt_float, GENjet_eta_float;
     vector<float> GENjet_phi_float, GENjet_mass_float;
     vector<int> GENjet_id;
@@ -1024,8 +1005,6 @@ _EnergyWgt
     edm::EDGetTokenT<reco::VertexCollection> vertexSrc_;
     edm::EDGetTokenT<reco::BeamSpot> beamSpotSrc_;
     edm::EDGetTokenT<std::vector<reco::Conversion> > conversionSrc_;
-    edm::EDGetTokenT<std::vector<reco::VertexCompositePtrCandidate> > svSrc_;
-    edm::EDGetTokenT<edm::View<pat::Jet> > svPhantomJetSrc_;
     edm::EDGetTokenT<double> muRhoSrc_;
     edm::EDGetTokenT<double> elRhoSrc_;
     edm::EDGetTokenT<double> rhoSrcSUS_;
@@ -1115,8 +1094,6 @@ UFHZZ4LAna::UFHZZ4LAna(const edm::ParameterSet& iConfig) :
     vertexSrc_(consumes<reco::VertexCollection>(iConfig.getUntrackedParameter<edm::InputTag>("vertexSrc"))),
     beamSpotSrc_(consumes<reco::BeamSpot>(iConfig.getUntrackedParameter<edm::InputTag>("beamSpotSrc"))),
     conversionSrc_(consumes<std::vector<reco::Conversion> >(iConfig.getUntrackedParameter<edm::InputTag>("conversionSrc"))),
-    svSrc_(consumes<std::vector<reco::VertexCompositePtrCandidate> >(iConfig.getUntrackedParameter<edm::InputTag>("svSrc"))),
-    svPhantomJetSrc_(consumes<edm::View<pat::Jet> >(edm::InputTag("pfParticleNetSVFlavourTagsPhantomJets"))),
     muRhoSrc_(consumes<double>(iConfig.getUntrackedParameter<edm::InputTag>("muRhoSrc"))),
     elRhoSrc_(consumes<double>(iConfig.getUntrackedParameter<edm::InputTag>("elRhoSrc"))),
     rhoSrcSUS_(consumes<double>(iConfig.getUntrackedParameter<edm::InputTag>("rhoSrcSUS"))),
@@ -1142,7 +1119,7 @@ UFHZZ4LAna::UFHZZ4LAna(const edm::ParameterSet& iConfig) :
     m4lLowCut(iConfig.getUntrackedParameter<double>("m4lLowCut",70.0)),
     //     m4lLowCut(iConfig.getUntrackedParameter<double>("m4lLowCut",0.0)),
     jetpt_cut(iConfig.getUntrackedParameter<double>("jetpt_cut",10.0)),
-    jeteta_cut(iConfig.getUntrackedParameter<double>("eta_cut",2.5)), // eta<2.5 is custom for Higgs+charm
+    jeteta_cut(iConfig.getUntrackedParameter<double>("eta_cut",4.7)),
     elecID(iConfig.getUntrackedParameter<std::string>("elecID","NonTrig")),
     isMC(iConfig.getUntrackedParameter<bool>("isMC",true)),
     isSignal(iConfig.getUntrackedParameter<bool>("isSignal",false)),
@@ -1489,12 +1466,6 @@ UFHZZ4LAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     edm::Handle<edm::View<pat::Jet> > jets;
     iEvent.getByToken(jetSrc_,jets);
     
-    // SV and its phantom jet collection
-    edm::Handle<std::vector<reco::VertexCompositePtrCandidate> > svs;
-    iEvent.getByToken(svSrc_, svs);
-    edm::Handle<edm::View<pat::Jet> > sv_phantom_jets;
-    iEvent.getByToken(svPhantomJetSrc_, sv_phantom_jets);
-    
     if (!jecunc) {
         edm::ESHandle<JetCorrectorParametersCollection> jetCorrParameterSet;
         iSetup.get<JetCorrectionsRecord>().get("AK4PFchs", jetCorrParameterSet);
@@ -1771,10 +1742,6 @@ UFHZZ4LAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     jet_jerdn_pt.clear(); jet_jerdn_eta.clear(); jet_jerdn_phi.clear(); jet_jerdn_mass.clear();
     jet_csvv2_.clear();
     jet_pumva.clear(); jet_csvv2.clear(); jet_isbtag.clear();
-    jet_DeepJet_b.clear(); jet_DeepJet_bb.clear(); jet_DeepJet_lepb.clear(); jet_DeepJet_c.clear();
-    jet_DeepJet_uds.clear(); jet_DeepJet_g.clear(); jet_DeepJet_CvsL.clear(); jet_DeepJet_CvsB.clear();
-    jet_ParticleNet_b.clear(); jet_ParticleNet_bb.clear(); jet_ParticleNet_c.clear(); jet_ParticleNet_cc.clear(); jet_ParticleNet_uds.clear();
-    jet_ParticleNet_g.clear(); jet_ParticleNet_undef.clear(); jet_ParticleNet_pu.clear(); jet_ParticleNet_CvsL.clear(); jet_ParticleNet_CvsB.clear();
     jet_hadronFlavour.clear(); jet_partonFlavour.clear();
     jet_QGTagger.clear(); jet_QGTagger_jesup.clear(); jet_QGTagger_jesdn.clear();
     jet_relpterr.clear(); jet_phierr.clear();
@@ -1816,13 +1783,6 @@ UFHZZ4LAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     absdeltarapidity_hleadingjet_pt30_eta4p7_jerup=-1.0; absdeltarapidity_hleadingjet_pt30_eta4p7_jerdn=-1.0;
     
     DijetMass=-1.0; DijetDEta=9999.0; DijetFisher=9999.0;
-
-    // SV
-    sv_pt.clear(); sv_eta.clear(); sv_phi.clear(); sv_mass.clear();
-    sv_energy.clear(); sv_ntracks.clear(); sv_normchi2.clear(); sv_dxy.clear();
-    sv_dxysig.clear(); sv_d3d.clear(); sv_d3dsig.clear(); sv_costhetasvpv.clear();
-    sv_genflavour.clear(); sv_nbhadrons.clear(); sv_nchadrons.clear();
-    sv_ParticleNet_b.clear(); sv_ParticleNet_bb.clear(); sv_ParticleNet_c.clear(); sv_ParticleNet_cc.clear(); sv_ParticleNet_unmat.clear(); 
 
     // n-jettiness for additional ak4 jets _pTWgt
     TauC_Inc_0j=-9999.0;
@@ -2280,10 +2240,6 @@ UFHZZ4LAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     // Higgs variables directly from GEN particle
     GENHmass=-1.0;
     
-    // GEN particles
-    GENPart_id.clear(); GENPart_pt.clear(); GENPart_eta.clear(); GENPart_phi.clear(); GENPart_mass.clear();
-    GENPart_status.clear(); GENPart_isExcite.clear(); GENPart_isCFromBHad.clear();
-
     // Jets
     GENjet_pt.clear(); GENjet_eta.clear(); GENjet_phi.clear(); GENjet_mass.clear();
     GENnjets_pt30_eta4p7=0;
@@ -3382,53 +3338,7 @@ UFHZZ4LAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                 
                 // } // all merged jets
                 
-                // custom for Higgs+charm: SV variables
-                const reco::Vertex & pv = *PV;
-                for(unsigned int i = 0; i < svs->size(); ++i) {
-
-                    const reco::VertexCompositePtrCandidate & sv = svs->at(i);
-                    const pat::Jet & spjet = sv_phantom_jets->at(i);
-                    sv_pt.push_back(sv.pt());
-                    sv_eta.push_back(sv.eta());
-                    sv_phi.push_back(sv.phi());
-                    sv_mass.push_back(sv.mass());
-                    sv_energy.push_back(sv.energy());
-
-                    // sv properties
-                    sv_ntracks.push_back(sv.numberOfDaughters());
-                    sv_normchi2.push_back(sv.vertexNormalizedChi2());
-
-                    VertexDistanceXY distxy;
-                    reco::Vertex::CovarianceMatrix csvxy;
-                    sv.fillVertexCovariance(csvxy);
-                    reco::Vertex svtxxy(sv.vertex(), csvxy);
-                    Measurement1D dxy = distxy.distance(svtxxy, pv);
-                    sv_dxy.push_back(dxy.value());
-                    sv_dxysig.push_back(dxy.significance());
-
-                    VertexDistance3D dist3d;
-                    reco::Vertex::CovarianceMatrix csv3d;
-                    sv.fillVertexCovariance(csv3d);
-                    reco::Vertex svtx3d(sv.vertex(), csv3d);
-                    Measurement1D d3d = dist3d.distance(svtx3d, pv);
-                    sv_d3d.push_back(d3d.value());
-                    sv_d3dsig.push_back(d3d.significance());
-
-                    reco::Candidate::Vector p = sv.momentum();
-                    reco::Candidate::Vector d(sv.vx() - pv.x(), sv.vy() - pv.y(), sv.vz() - pv.z());
-                    sv_costhetasvpv.push_back(p.Unit().Dot(d.Unit()));
-
-                    // SV tagging scores and truth flavour labels
-                    sv_genflavour.push_back(spjet.hasUserFloat("gen_flavour") ? spjet.userFloat("gen_flavour") : -1);
-                    sv_nbhadrons.push_back(spjet.hasUserFloat("n_bhadrons") ? spjet.userFloat("n_bhadrons"): -1);
-                    sv_nchadrons.push_back(spjet.hasUserFloat("n_chadrons") ? spjet.userFloat("n_chadrons"): -1);
-                    sv_ParticleNet_b.push_back(spjet.userFloat("probb"));
-                    sv_ParticleNet_bb.push_back(spjet.userFloat("probbb"));
-                    sv_ParticleNet_c.push_back(spjet.userFloat("probc"));
-                    sv_ParticleNet_cc.push_back(spjet.userFloat("probcc"));
-                    sv_ParticleNet_unmat.push_back(spjet.userFloat("probunmat"));
-                }
-
+                
                 
                 if(isCode4l && foundHiggsCandidate ){
                 // if(foundHiggsCandidate ){
@@ -4313,10 +4223,6 @@ UFHZZ4LAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     GENZ_eta_float.clear(); GENZ_eta_float.assign(GENZ_eta.begin(),GENZ_eta.end());
     GENZ_phi_float.clear(); GENZ_phi_float.assign(GENZ_phi.begin(),GENZ_phi.end());
     GENZ_mass_float.clear(); GENZ_mass_float.assign(GENZ_mass.begin(),GENZ_mass.end());
-    GENPart_pt_float.clear(); GENPart_pt_float.assign(GENPart_pt.begin(),GENPart_pt.end());
-    GENPart_eta_float.clear(); GENPart_eta_float.assign(GENPart_eta.begin(),GENPart_eta.end());
-    GENPart_phi_float.clear(); GENPart_phi_float.assign(GENPart_phi.begin(),GENPart_phi.end());
-    GENPart_mass_float.clear(); GENPart_mass_float.assign(GENPart_mass.begin(),GENPart_mass.end());
     GENjet_pt_float.clear(); GENjet_pt_float.assign(GENjet_pt.begin(),GENjet_pt.end());
     GENjet_eta_float.clear(); GENjet_eta_float.assign(GENjet_eta.begin(),GENjet_eta.end());
     GENjet_phi_float.clear(); GENjet_phi_float.assign(GENjet_phi.begin(),GENjet_phi.end());
@@ -5878,24 +5784,6 @@ void UFHZZ4LAna::bookPassedEventTree(TString treeName, TTree *tree)
     tree->Branch("jet_pumva",&jet_pumva);
     tree->Branch("jet_csvv2",&jet_csvv2);
     tree->Branch("jet_csvv2_",&jet_csvv2_);
-    tree->Branch("jet_DeepJet_b",&jet_DeepJet_b);
-    tree->Branch("jet_DeepJet_bb",&jet_DeepJet_bb);
-    tree->Branch("jet_DeepJet_lepb",&jet_DeepJet_lepb);
-    tree->Branch("jet_DeepJet_c",&jet_DeepJet_c);
-    tree->Branch("jet_DeepJet_uds",&jet_DeepJet_uds);
-    tree->Branch("jet_DeepJet_g",&jet_DeepJet_g);
-    tree->Branch("jet_DeepJet_CvsL",&jet_DeepJet_CvsL);
-    tree->Branch("jet_DeepJet_CvsB",&jet_DeepJet_CvsB);
-    tree->Branch("jet_ParticleNet_b",&jet_ParticleNet_b);
-    tree->Branch("jet_ParticleNet_bb",&jet_ParticleNet_bb);
-    tree->Branch("jet_ParticleNet_c",&jet_ParticleNet_c);
-    tree->Branch("jet_ParticleNet_cc",&jet_ParticleNet_cc);
-    tree->Branch("jet_ParticleNet_uds",&jet_ParticleNet_uds);
-    tree->Branch("jet_ParticleNet_g",&jet_ParticleNet_g);
-    tree->Branch("jet_ParticleNet_undef",&jet_ParticleNet_undef);
-    tree->Branch("jet_ParticleNet_pu",&jet_ParticleNet_pu);
-    tree->Branch("jet_ParticleNet_CvsL",&jet_ParticleNet_CvsL);
-    tree->Branch("jet_ParticleNet_CvsB",&jet_ParticleNet_CvsB);
     tree->Branch("jet_isbtag",&jet_isbtag);
     tree->Branch("jet_hadronFlavour",&jet_hadronFlavour);
     tree->Branch("jet_partonFlavour",&jet_partonFlavour);
@@ -5940,28 +5828,6 @@ void UFHZZ4LAna::bookPassedEventTree(TString treeName, TTree *tree)
     tree->Branch("pt_leadingjet_pt30_eta2p5_jesdn",&pt_leadingjet_pt30_eta2p5_jesdn,"pt_leadingjet_pt30_eta2p5_jesdn/F");
     tree->Branch("pt_leadingjet_pt30_eta2p5_jerup",&pt_leadingjet_pt30_eta2p5_jerup,"pt_leadingjet_pt30_eta2p5_jerup/F");
     tree->Branch("pt_leadingjet_pt30_eta2p5_jerdn",&pt_leadingjet_pt30_eta2p5_jerdn,"pt_leadingjet_pt30_eta2p5_jerdn/F");
-
-    // SV
-    tree->Branch("sv_pt",&sv_pt);
-    tree->Branch("sv_eta",&sv_eta);
-    tree->Branch("sv_phi",&sv_phi);
-    tree->Branch("sv_mass",&sv_mass);
-    tree->Branch("sv_energy",&sv_energy);
-    tree->Branch("sv_ntracks",&sv_ntracks);
-    tree->Branch("sv_normchi2",&sv_normchi2);
-    tree->Branch("sv_dxy",&sv_dxy);
-    tree->Branch("sv_dxysig",&sv_dxysig);
-    tree->Branch("sv_d3d",&sv_d3d);
-    tree->Branch("sv_d3dsig",&sv_d3dsig);
-    tree->Branch("sv_costhetasvpv",&sv_costhetasvpv);
-    tree->Branch("sv_genflavour",&sv_genflavour);
-    tree->Branch("sv_nbhadrons",&sv_nbhadrons);
-    tree->Branch("sv_nchadrons",&sv_nchadrons);
-    tree->Branch("sv_ParticleNet_b",&sv_ParticleNet_b);
-    tree->Branch("sv_ParticleNet_bb",&sv_ParticleNet_bb);
-    tree->Branch("sv_ParticleNet_c",&sv_ParticleNet_c);
-    tree->Branch("sv_ParticleNet_cc",&sv_ParticleNet_cc);
-    tree->Branch("sv_ParticleNet_unmat",&sv_ParticleNet_unmat);
 
     // n-jettiness  noHRapidity _pTWgt
     tree->Branch("TauB_Inc_0j",&TauB_Inc_0j,"TauB_Inc_0j/F");
@@ -6427,16 +6293,6 @@ void UFHZZ4LAna::bookPassedEventTree(TString treeName, TTree *tree)
     // Higgs variables directly from GEN particle
     tree->Branch("GENHmass",&GENHmass,"GENHmass/F");
     
-    // GEN particles
-    tree->Branch("GENPart_pt",&GENPart_pt_float);
-    tree->Branch("GENPart_eta",&GENPart_eta_float);
-    tree->Branch("GENPart_phi",&GENPart_phi_float);
-    tree->Branch("GENPart_mass",&GENPart_mass_float);
-    tree->Branch("GENPart_id",&GENPart_id);
-    tree->Branch("GENPart_status",&GENPart_status);
-    tree->Branch("GENPart_isExcite",&GENPart_isExcite);
-    tree->Branch("GENPart_isCFromBHad",&GENPart_isCFromBHad);
-
     // STXS
     tree->Branch("stage0cat",&stage0cat,"stage0cat/I");
     tree->Branch("stage1cat",&stage1cat,"stage1cat/I");
@@ -6905,25 +6761,6 @@ void UFHZZ4LAna::setTreeVariables( const edm::Event& iEvent, const edm::EventSet
             //jet_csvv2.push_back(goodJets[k].bDiscriminator("pfDeepCSVDiscriminatorsJetTags:BvsAll"));
             jet_csvv2.push_back(goodJets[k].bDiscriminator("pfDeepCSVJetTags:probb")+goodJets[k].bDiscriminator("pfDeepCSVJetTags:probbb"));
             jet_csvv2_.push_back(goodJets[k].bDiscriminator("pfDeepCSVDiscriminatorsJetTags:BvsAll"));
-            // for Higgs+charm: more tagging vars
-            jet_DeepJet_b.push_back(goodJets[k].bDiscriminator("pfDeepFlavourJetTags:probb"));
-            jet_DeepJet_bb.push_back(goodJets[k].bDiscriminator("pfDeepFlavourJetTags:probbb"));
-            jet_DeepJet_lepb.push_back(goodJets[k].bDiscriminator("pfDeepFlavourJetTags:problepb"));
-            jet_DeepJet_c.push_back(goodJets[k].bDiscriminator("pfDeepFlavourJetTags:probc"));
-            jet_DeepJet_uds.push_back(goodJets[k].bDiscriminator("pfDeepFlavourJetTags:probuds"));
-            jet_DeepJet_g.push_back(goodJets[k].bDiscriminator("pfDeepFlavourJetTags:probg"));
-            jet_DeepJet_CvsL.push_back(jet_DeepJet_c.back()/(jet_DeepJet_c.back()+jet_DeepJet_uds.back()+jet_DeepJet_g.back()+1e-8));
-            jet_DeepJet_CvsB.push_back(jet_DeepJet_c.back()/(jet_DeepJet_c.back()+jet_DeepJet_b.back()+jet_DeepJet_bb.back()+jet_DeepJet_lepb.back()+1e-8));
-            jet_ParticleNet_b.push_back(goodJets[k].bDiscriminator("pfParticleNetAK4JetTags:probb"));
-            jet_ParticleNet_bb.push_back(goodJets[k].bDiscriminator("pfParticleNetAK4JetTags:probbb"));
-            jet_ParticleNet_c.push_back(goodJets[k].bDiscriminator("pfParticleNetAK4JetTags:probc"));
-            jet_ParticleNet_cc.push_back(goodJets[k].bDiscriminator("pfParticleNetAK4JetTags:probcc"));
-            jet_ParticleNet_uds.push_back(goodJets[k].bDiscriminator("pfParticleNetAK4JetTags:probuds"));
-            jet_ParticleNet_g.push_back(goodJets[k].bDiscriminator("pfParticleNetAK4JetTags:probg"));
-            jet_ParticleNet_undef.push_back(goodJets[k].bDiscriminator("pfParticleNetAK4JetTags:probundef"));
-            jet_ParticleNet_pu.push_back(goodJets[k].bDiscriminator("pfParticleNetAK4JetTags:probpu"));
-            jet_ParticleNet_CvsL.push_back(goodJets[k].bDiscriminator("pfParticleNetAK4DiscriminatorsJetTags:CvsL"));
-            jet_ParticleNet_CvsB.push_back(goodJets[k].bDiscriminator("pfParticleNetAK4DiscriminatorsJetTags:CvsB"));
             
             TRandom3 rand;
             rand.SetSeed(abs(static_cast<int>(sin(goodJets[k].phi())*100000)));
@@ -8137,8 +7974,6 @@ void UFHZZ4LAna::setGENVariables(edm::Handle<reco::GenParticleCollection> pruned
     int GENmom1_id=-999, GENmom2_id=-999;
     int counter_initParticle=0;
     if (verbose) cout<<"begin looping on gen particles"<<endl;
-
-
     for(genPart = prunedgenParticles->begin(); genPart != prunedgenParticles->end(); genPart++) {
          j++;
 
@@ -8264,45 +8099,6 @@ void UFHZZ4LAna::setGENVariables(edm::Handle<reco::GenParticleCollection> pruned
             nGenStatus2bHad+=1;
         }
         
-        // custom for Higgs+charm analysis
-        // bottom/charm flavour hadrons and partons
-        bool store_genPart = false;
-        if (genPart->isLastCopy()) {
-            if ((abs(genPart->pdgId())==5 || CandMCTagUtils::hasBottom(*genPart)) || (abs(genPart->pdgId())==4 || CandMCTagUtils::hasCharm(*genPart))) {
-                store_genPart = true;
-            }
-        }
-        if(store_genPart) {
-            auto isExcite = [&](const auto p) {
-                // only applicable to b/c hadrons
-                if (abs(p->pdgId())==4 || abs(p->pdgId())==5) { return false; }
-                bool isBFlav = CandMCTagUtils::hasBottom(*p);
-                bool isCFlav = CandMCTagUtils::hasCharm(*p);
-                for (size_t i=0; i < p->numberOfDaughters(); ++i) {
-                    if (isBFlav && CandMCTagUtils::hasBottom( *(p->daughter(i)) ) ) { return true; }
-                    if (isCFlav && CandMCTagUtils::hasCharm( *(p->daughter(i)) ) ) { return true; }
-                }
-                return false;
-            };
-            auto isCFromBHad = [&](const auto p) {
-                // only applicable to b/c hadrons
-                if (abs(p->pdgId())==4 || abs(p->pdgId())==5) { return false; }
-                if (CandMCTagUtils::hasCharm(*p)) {
-                    for (size_t i=0; i < p->numberOfMothers(); ++i) {
-                        if (CandMCTagUtils::hasBottom( *(p->mother(i))) ) { return true; }
-                    }
-                }
-                return false;
-            };
-            GENPart_id.push_back(genPart->pdgId());
-            GENPart_pt.push_back(genPart->pt());
-            GENPart_eta.push_back(genPart->eta());
-            GENPart_phi.push_back(genPart->phi());
-            GENPart_mass.push_back(genPart->mass());
-            GENPart_status.push_back(genPart->status());
-            GENPart_isExcite.push_back(isExcite(genPart));
-            GENPart_isCFromBHad.push_back(isCFromBHad(genPart));
-        }
     }
     
     if (GENlep_pt.size()>=4) {

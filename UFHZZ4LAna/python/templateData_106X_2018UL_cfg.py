@@ -231,6 +231,9 @@ runMetCorAndUncFromMiniAOD(process,
             isData=True,
             )
 
+# SV
+process.load('UFHZZAnalysisRun2.SVFlavourTag.pfParticleNetSVFlavourTagSuite_cff')
+
 from PhysicsTools.PatUtils.l1PrefiringWeightProducer_cfi import l1PrefiringWeightProducer
 process.prefiringweight = l1PrefiringWeightProducer.clone(
         #TheJets = cms.InputTag("updatedPatJetsUpdatedJEC"), #this should be the slimmedJets collection with up to date JECs !
@@ -278,6 +281,7 @@ process.Ana = cms.EDAnalyzer('UFHZZ4LAna',
                               vertexSrc    = cms.untracked.InputTag("offlineSlimmedPrimaryVertices"),
                               beamSpotSrc  = cms.untracked.InputTag("offlineBeamSpot"),
                               conversionSrc  = cms.untracked.InputTag("reducedEgamma","reducedConversions"),
+                              svSrc        = cms.untracked.InputTag("slimmedSecondaryVertices"),
                               isMC         = cms.untracked.bool(False),
                               isSignal     = cms.untracked.bool(False),
                               mH           = cms.untracked.double(125.0),
@@ -342,6 +346,8 @@ process.p = cms.Path(process.fsrPhotonSequence*
                      process.slimmedJetsAK8JEC*
                      process.fullPatMetSequence*
                      process.corrJets*
+                     #process.genBCHadrons*
+                     process.pfParticleNetSVFlavourTagInfos*process.pfParticleNetSVFlavourTagsPhantomJets*
                      #process.mergedGenParticles*process.myGenerator*process.rivetProducerHTXS*#process.rivetProducerHZZFid*
                      #process.prefiringweight*
                      process.Ana
