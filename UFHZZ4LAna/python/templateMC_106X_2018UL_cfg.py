@@ -2,6 +2,9 @@ import FWCore.ParameterSet.Config as cms
 from FWCore.ParameterSet.VarParsing import VarParsing
 
 process = cms.Process("UFHZZ4LAnalysis")
+process.options = cms.untracked.PSet(
+        numberOfThreads = cms.untracked.uint32(2)
+)
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 10000
@@ -320,6 +323,7 @@ process.Ana = cms.EDAnalyzer('UFHZZ4LAna',
                               skimLooseLeptons = cms.untracked.int32(4),              
                               skimTightLeptons = cms.untracked.int32(4),              
                               bestCandMela = cms.untracked.bool(False),   # for differential measurements
+                              storePFCands = cms.untracked.bool(True),
                               year = cms.untracked.int32(2018),####for year put 2016,2017, or 2018 to select correct Muon training and electron MVA
                              )
 

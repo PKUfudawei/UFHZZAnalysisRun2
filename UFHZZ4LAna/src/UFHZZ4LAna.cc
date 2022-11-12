@@ -162,6 +162,10 @@
 #include "JetMETCorrections/Modules/interface/JetResolution.h"
 #include "DataFormats/PatCandidates/interface/Jet.h"
 
+//BTag
+#include "RecoBTag/FeatureTools/interface/TrackInfoBuilder.h"
+#include "RecoBTag/FeatureTools/interface/deep_helpers.h"
+
 //BTag Calibration
 
 #include "CondFormats/BTauObjects/interface/BTagCalibration.h"
@@ -445,6 +449,13 @@ private:
     vector<float>  sv_normchi2, sv_dxy, sv_dxysig, sv_d3d, sv_d3dsig, sv_costhetasvpv;
     vector<float>  sv_genflavour, sv_nbhadrons, sv_nchadrons;
     vector<float>  sv_ParticleNet_b, sv_ParticleNet_bb, sv_ParticleNet_c, sv_ParticleNet_cc, sv_ParticleNet_unmat;
+
+    // PF candidates
+    vector<float>  pfcand_puppiw, pfcand_hcalFrac, pfcand_VTX_ass, pfcand_lostInnerHits, pfcand_quality, pfcand_charge;
+    vector<float>  pfcand_isEl, pfcand_isMu, pfcand_isChargedHad, pfcand_isGamma, pfcand_isNeutralHad, pfcand_pt, pfcand_e, pfcand_eta, pfcand_phi;
+    vector<float>  pfcand_pt_log, pfcand_drminsv, pfcand_normchi2, pfcand_dz, pfcand_dzsig, pfcand_dxy, pfcand_dxysig;
+    vector<float>  pfcand_dptdpt, pfcand_detadeta, pfcand_dphidphi, pfcand_dxydxy, pfcand_dzdz, pfcand_dxydz, pfcand_dphidxy;
+    vector<float>  pfcand_dlambdadz, pfcand_mask, pfcand_pt_log_nopuppi, pfcand_e_log_nopuppi;
 
     // n-jettiness for additional ak4 jets
     float TauC_Inc_0j, TauC_JetConstituents_0j, TauCnoHRapidity_JetConstituents_0j, TauCnoHRapidity_Inc_0j;
@@ -1077,6 +1088,7 @@ _EnergyWgt
     
     int year_,year;///use to choose Muon BDT
     bool isCode4l;
+    bool storePFCands;
     
     // register to the TFileService
     edm::Service<TFileService> fs;
@@ -1184,7 +1196,8 @@ UFHZZ4LAna::UFHZZ4LAna(const edm::ParameterSet& iConfig) :
     skimTightLeptons(iConfig.getUntrackedParameter<int>("skimTightLeptons",2)),
     verbose(iConfig.getUntrackedParameter<bool>("verbose",false)),
     year_(iConfig.getUntrackedParameter<int>("year",2018)),////for year put 2016,2017, or 2018 to select correct training
-    isCode4l(iConfig.getUntrackedParameter<bool>("isCode4l",true))
+    isCode4l(iConfig.getUntrackedParameter<bool>("isCode4l",true)),
+    storePFCands(iConfig.getUntrackedParameter<bool>("storePFCands",false))
 {
     
     if(!isMC){reweightForPU = false;}
@@ -1823,6 +1836,13 @@ UFHZZ4LAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     sv_dxysig.clear(); sv_d3d.clear(); sv_d3dsig.clear(); sv_costhetasvpv.clear();
     sv_genflavour.clear(); sv_nbhadrons.clear(); sv_nchadrons.clear();
     sv_ParticleNet_b.clear(); sv_ParticleNet_bb.clear(); sv_ParticleNet_c.clear(); sv_ParticleNet_cc.clear(); sv_ParticleNet_unmat.clear(); 
+
+    // PF candidates
+    pfcand_puppiw.clear(); pfcand_hcalFrac.clear(); pfcand_VTX_ass.clear(); pfcand_lostInnerHits.clear(); pfcand_quality.clear(); pfcand_charge.clear(); 
+    pfcand_isEl.clear(); pfcand_isMu.clear(); pfcand_isChargedHad.clear(); pfcand_isGamma.clear(); pfcand_isNeutralHad.clear(); pfcand_pt.clear(); pfcand_e.clear(); pfcand_eta.clear(); pfcand_phi.clear(); 
+    pfcand_pt_log.clear(); pfcand_drminsv.clear(); pfcand_normchi2.clear(); pfcand_dz.clear(); pfcand_dzsig.clear(); pfcand_dxy.clear(); pfcand_dxysig.clear(); 
+    pfcand_dptdpt.clear(); pfcand_detadeta.clear(); pfcand_dphidphi.clear(); pfcand_dxydxy.clear(); pfcand_dzdz.clear(); pfcand_dxydz.clear(); pfcand_dphidxy.clear(); 
+    pfcand_dlambdadz.clear(); pfcand_mask.clear(); pfcand_pt_log_nopuppi.clear(); pfcand_e_log_nopuppi.clear(); 
 
     // n-jettiness for additional ak4 jets _pTWgt
     TauC_Inc_0j=-9999.0;
@@ -3429,7 +3449,82 @@ UFHZZ4LAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                     sv_ParticleNet_unmat.push_back(spjet.userFloat("probunmat"));
                 }
 
-                
+                // custom for Higgs+charm: PF candidates
+                if (storePFCands) {
+                    for(unsigned int i = 0; i < pfCands->size(); ++i) {
+                        const pat::PackedCandidate *packed_cand = &(pfCands->at(i));
+
+                        const float ip_sign = 1;
+
+                        auto candP4 = packed_cand->puppiWeight() * packed_cand->p4();
+                        float hcal_fraction = 0.;
+                        if (packed_cand->pdgId() == 1 || packed_cand->pdgId() == 130) {
+                            hcal_fraction = packed_cand->hcalFraction();
+                        } else if (packed_cand->isIsolatedChargedHadron()) {
+                            hcal_fraction = packed_cand->rawHcalFraction();
+                        }
+
+                        pfcand_hcalFrac.push_back(hcal_fraction);
+                        pfcand_VTX_ass.push_back(packed_cand->pvAssociationQuality());
+                        pfcand_lostInnerHits.push_back(packed_cand->lostInnerHits());
+                        pfcand_quality.push_back(packed_cand->bestTrack() ? packed_cand->bestTrack()->qualityMask() : 0);
+
+                        pfcand_charge.push_back(packed_cand->charge());
+                        pfcand_isEl.push_back(std::abs(packed_cand->pdgId()) == 11);
+                        pfcand_isMu.push_back(std::abs(packed_cand->pdgId()) == 13);
+                        pfcand_isChargedHad.push_back(std::abs(packed_cand->pdgId()) == 211);
+                        pfcand_isGamma.push_back(std::abs(packed_cand->pdgId()) == 22);
+                        pfcand_isNeutralHad.push_back(std::abs(packed_cand->pdgId()) == 130);
+
+                        // impact parameters
+                        pfcand_dz.push_back(ip_sign * packed_cand->dz());
+                        pfcand_dxy.push_back(ip_sign * packed_cand->dxy());
+                        pfcand_dzsig.push_back(packed_cand->bestTrack() ? ip_sign * packed_cand->dz() / packed_cand->dzError() : 0);
+                        pfcand_dxysig.push_back(packed_cand->bestTrack() ? ip_sign * packed_cand->dxy() / packed_cand->dxyError() : 0);
+
+                        // basic kinematics
+                        pfcand_puppiw.push_back(packed_cand->puppiWeight());
+                        pfcand_pt.push_back(candP4.pt());
+                        pfcand_e.push_back(candP4.energy());
+                        pfcand_eta.push_back(candP4.eta());
+                        pfcand_phi.push_back(candP4.phi());
+
+                        pfcand_pt_log.push_back(std::log(candP4.pt()));
+
+                        pfcand_mask.push_back(1);
+                        pfcand_pt_log_nopuppi.push_back(std::log(packed_cand->pt()));
+                        pfcand_e_log_nopuppi.push_back(std::log(packed_cand->energy()));
+
+                        float drminpfcandsv = btagbtvdeep::mindrsvpfcand(*svs, &(*packed_cand), std::numeric_limits<float>::infinity());
+                        pfcand_drminsv.push_back(drminpfcandsv);
+
+                        const reco::Track *trk = packed_cand->bestTrack();
+                        if (trk) {
+                            pfcand_normchi2.push_back(std::floor(trk->normalizedChi2()));
+                            // track covariance
+                            auto cov = [&](unsigned i, unsigned j) { return trk->covariance(i, j); };
+                            pfcand_dptdpt.push_back(cov(0, 0));
+                            pfcand_detadeta.push_back(cov(1, 1));
+                            pfcand_dphidphi.push_back(cov(2, 2));
+                            pfcand_dxydxy.push_back(cov(3, 3));
+                            pfcand_dzdz.push_back(cov(4, 4));
+                            pfcand_dxydz.push_back(cov(3, 4));
+                            pfcand_dphidxy.push_back(cov(2, 3));
+                            pfcand_dlambdadz.push_back(cov(1, 4));
+                        } else {
+                            pfcand_normchi2.push_back(999);
+                            pfcand_dptdpt.push_back(0);
+                            pfcand_detadeta.push_back(0);
+                            pfcand_dphidphi.push_back(0);
+                            pfcand_dxydxy.push_back(0);
+                            pfcand_dzdz.push_back(0);
+                            pfcand_dxydz.push_back(0);
+                            pfcand_dphidxy.push_back(0);
+                            pfcand_dlambdadz.push_back(0);
+                        }
+                    }
+                }
+
                 if(isCode4l && foundHiggsCandidate ){
                 // if(foundHiggsCandidate ){
                     
@@ -5962,6 +6057,43 @@ void UFHZZ4LAna::bookPassedEventTree(TString treeName, TTree *tree)
     tree->Branch("sv_ParticleNet_c",&sv_ParticleNet_c);
     tree->Branch("sv_ParticleNet_cc",&sv_ParticleNet_cc);
     tree->Branch("sv_ParticleNet_unmat",&sv_ParticleNet_unmat);
+
+    // PF candidates
+    if (storePFCands) {
+        tree->Branch("pfcand_puppiw",&pfcand_puppiw);
+        tree->Branch("pfcand_hcalFrac",&pfcand_hcalFrac);
+        tree->Branch("pfcand_VTX_ass",&pfcand_VTX_ass);
+        tree->Branch("pfcand_lostInnerHits",&pfcand_lostInnerHits);
+        tree->Branch("pfcand_quality",&pfcand_quality);
+        tree->Branch("pfcand_charge",&pfcand_charge);
+        tree->Branch("pfcand_isEl",&pfcand_isEl);
+        tree->Branch("pfcand_isMu",&pfcand_isMu);
+        tree->Branch("pfcand_isChargedHad",&pfcand_isChargedHad);
+        tree->Branch("pfcand_isGamma",&pfcand_isGamma);
+        tree->Branch("pfcand_isNeutralHad",&pfcand_isNeutralHad);
+        tree->Branch("pfcand_pt",&pfcand_pt);
+        tree->Branch("pfcand_e",&pfcand_e);
+        tree->Branch("pfcand_eta",&pfcand_eta);
+        tree->Branch("pfcand_phi",&pfcand_phi);
+        tree->Branch("pfcand_pt_log",&pfcand_pt_log);
+        tree->Branch("pfcand_drminsv",&pfcand_drminsv);
+        tree->Branch("pfcand_normchi2",&pfcand_normchi2);
+        tree->Branch("pfcand_dz",&pfcand_dz);
+        tree->Branch("pfcand_dzsig",&pfcand_dzsig);
+        tree->Branch("pfcand_dxy",&pfcand_dxy);
+        tree->Branch("pfcand_dxysig",&pfcand_dxysig);
+        tree->Branch("pfcand_dptdpt",&pfcand_dptdpt);
+        tree->Branch("pfcand_detadeta",&pfcand_detadeta);
+        tree->Branch("pfcand_dphidphi",&pfcand_dphidphi);
+        tree->Branch("pfcand_dxydxy",&pfcand_dxydxy);
+        tree->Branch("pfcand_dzdz",&pfcand_dzdz);
+        tree->Branch("pfcand_dxydz",&pfcand_dxydz);
+        tree->Branch("pfcand_dphidxy",&pfcand_dphidxy);
+        tree->Branch("pfcand_dlambdadz",&pfcand_dlambdadz);
+        tree->Branch("pfcand_mask",&pfcand_mask);
+        tree->Branch("pfcand_pt_log_nopuppi",&pfcand_pt_log_nopuppi);
+        tree->Branch("pfcand_e_log_nopuppi",&pfcand_e_log_nopuppi);
+    }
 
     // n-jettiness  noHRapidity _pTWgt
     tree->Branch("TauB_Inc_0j",&TauB_Inc_0j,"TauB_Inc_0j/F");

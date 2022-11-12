@@ -23,6 +23,7 @@
 <use   name="SimDataFormats/PileupSummaryInfo"/>
 <use   name="SimDataFormats/GeneratorProducts">
 <use   name="EgammaAnalysis/ElectronTools"/> 
+<use   name="RecoBTag/FeatureTools"/>
 <use   name="RecoEgamma/EgammaTools"/>
 <use   name="RecoParticleFlow/PFClusterTools"/>
 <use   name="DataFormats/METReco"/>
