@@ -71,6 +71,8 @@
 #include "SimDataFormats/GeneratorProducts/interface/LHERunInfoProduct.h"
 #include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
 #include "SimDataFormats/GeneratorProducts/interface/HepMCProduct.h"
+#include "SimDataFormats/JetMatching/interface/JetFlavourInfo.h"
+#include "SimDataFormats/JetMatching/interface/JetFlavourInfoMatching.h"
 
 //HTXS
 #include "SimDataFormats/HTXS/interface/HiggsTemplateCrossSections.h"
@@ -260,7 +262,8 @@ private:
                           edm::Handle<edm::View<pat::Jet> > &jets);
     void setGENVariables(edm::Handle<reco::GenParticleCollection> prunedgenParticles,
                          edm::Handle<edm::View<pat::PackedGenParticle> > packedgenParticles,
-                         edm::Handle<edm::View<reco::GenJet> > genJets);
+                         edm::Handle<edm::View<reco::GenJet> > genJets,
+                         edm::Handle<reco::JetFlavourInfoMatchingCollection> jetFlavourInfos);
     bool mZ1_mZ2(unsigned int& L1, unsigned int& L2, unsigned int& L3, unsigned int& L4, bool makeCuts);
     
     // -------------------------
@@ -826,7 +829,7 @@ _EnergyWgt
     vector<bool> GENPart_isExcite; vector<bool> GENPart_isCFromBHad;
     
     // Jets
-    vector<double> GENjet_pt; vector<double> GENjet_eta; vector<double> GENjet_phi; vector<double> GENjet_mass;
+    vector<double> GENjet_pt; vector<double> GENjet_eta; vector<double> GENjet_phi; vector<double> GENjet_mass; vector<double> GENjet_hadronFlavour; vector<double> GENjet_partonFlavour;
     int GENnjets_pt30_eta4p7; float GENpt_leadingjet_pt30_eta4p7;
     int GENnbjets_pt30_eta4p7;
     int GENnjets_pt30_eta2p5; float GENpt_leadingjet_pt30_eta2p5;
@@ -996,6 +999,7 @@ _EnergyWgt
     vector<float> GENPart_phi_float, GENPart_mass_float;
     vector<float> GENjet_pt_float, GENjet_eta_float;
     vector<float> GENjet_phi_float, GENjet_mass_float;
+    vector<float> GENjet_hadronFlavour_float, GENjet_partonFlavour_float;
     vector<int> GENjet_id;
     int jetid = 999;
     int genjet_id = 999;
@@ -1046,6 +1050,7 @@ _EnergyWgt
     edm::EDGetTokenT<reco::GenParticleCollection> prunedgenParticlesSrc_;
     edm::EDGetTokenT<edm::View<pat::PackedGenParticle> > packedgenParticlesSrc_;
     edm::EDGetTokenT<edm::View<reco::GenJet> > genJetsSrc_;
+    edm::EDGetTokenT<reco::JetFlavourInfoMatchingCollection> jetFlavourInfosSrc_;
     edm::EDGetTokenT<GenEventInfoProduct> generatorSrc_;
     edm::EDGetTokenT<LHEEventProduct> lheInfoSrc_;
     edm::EDGetTokenT<LHERunInfoProduct> lheRunInfoToken_;
@@ -1058,7 +1063,7 @@ _EnergyWgt
     // Configuration
     const float Zmass;
     float mZ1Low, mZ2Low, mZ1High, mZ2High, m4lLowCut;
-    float jetpt_cut, jeteta_cut;
+    float jetpt_cut, jeteta_cut, jetPtMinCut, genJetPtMinCut;
     std::string elecID;
     bool isMC, isSignal;
     float mH;
@@ -1138,6 +1143,7 @@ UFHZZ4LAna::UFHZZ4LAna(const edm::ParameterSet& iConfig) :
     prunedgenParticlesSrc_(consumes<reco::GenParticleCollection>(iConfig.getUntrackedParameter<edm::InputTag>("prunedgenParticlesSrc"))),
     packedgenParticlesSrc_(consumes<edm::View<pat::PackedGenParticle> >(iConfig.getUntrackedParameter<edm::InputTag>("packedgenParticlesSrc"))),
     genJetsSrc_(consumes<edm::View<reco::GenJet> >(iConfig.getUntrackedParameter<edm::InputTag>("genJetsSrc"))),
+    jetFlavourInfosSrc_(consumes<reco::JetFlavourInfoMatchingCollection>(iConfig.getUntrackedParameter<edm::InputTag>("jetFlavourInfosSrc"))),
     generatorSrc_(consumes<GenEventInfoProduct>(iConfig.getUntrackedParameter<edm::InputTag>("generatorSrc"))),
     lheInfoSrc_(consumes<LHEEventProduct>(iConfig.getUntrackedParameter<edm::InputTag>("lheInfoSrc"))),
     lheRunInfoToken_(consumes<LHERunInfoProduct,edm::InRun>(edm::InputTag("externalLHEProducer",""))),
@@ -1155,6 +1161,8 @@ UFHZZ4LAna::UFHZZ4LAna(const edm::ParameterSet& iConfig) :
     //     m4lLowCut(iConfig.getUntrackedParameter<double>("m4lLowCut",0.0)),
     jetpt_cut(iConfig.getUntrackedParameter<double>("jetpt_cut",10.0)),
     jeteta_cut(iConfig.getUntrackedParameter<double>("eta_cut",2.5)), // eta<2.5 is custom for Higgs+charm
+    jetPtMinCut(iConfig.getUntrackedParameter<double>("jetPtMinCut",10.)), // new pt cut defined in Higgs+charm
+    genJetPtMinCut(iConfig.getUntrackedParameter<double>("genJetPtMinCut",10.)), // new pt cut defined in Higgs+charm (slimmedGenJets has pt>8)
     elecID(iConfig.getUntrackedParameter<std::string>("elecID","NonTrig")),
     isMC(iConfig.getUntrackedParameter<bool>("isMC",true)),
     isSignal(iConfig.getUntrackedParameter<bool>("isSignal",false)),
@@ -1543,6 +1551,9 @@ UFHZZ4LAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     
     edm::Handle<edm::View<reco::GenJet> > genJets;
     iEvent.getByToken(genJetsSrc_, genJets);
+
+    edm::Handle<reco::JetFlavourInfoMatchingCollection> jetFlavourInfos;
+    iEvent.getByToken(jetFlavourInfosSrc_, jetFlavourInfos);
     
     edm::Handle<GenEventInfoProduct> genEventInfo;
     iEvent.getByToken(generatorSrc_,genEventInfo);
@@ -2305,7 +2316,7 @@ UFHZZ4LAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     GENPart_status.clear(); GENPart_isExcite.clear(); GENPart_isCFromBHad.clear();
 
     // Jets
-    GENjet_pt.clear(); GENjet_eta.clear(); GENjet_phi.clear(); GENjet_mass.clear();
+    GENjet_pt.clear(); GENjet_eta.clear(); GENjet_phi.clear(); GENjet_mass.clear(); GENjet_hadronFlavour.clear(); GENjet_partonFlavour.clear();
     GENnjets_pt30_eta4p7=0;
     GENnbjets_pt30_eta4p7=0;
     GENnjets_pt30_eta2p5=0;
@@ -2585,7 +2596,7 @@ UFHZZ4LAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         }
         
         if (verbose) cout<<"setting gen variables"<<endl;
-        setGENVariables(prunedgenParticles,packedgenParticles,genJets);
+        setGENVariables(prunedgenParticles,packedgenParticles,genJets,jetFlavourInfos);
         if (verbose) { cout<<"finshed setting gen variables"<<endl;  }
         
         if (int(GENZ_pt.size()) == 2) {
@@ -4417,6 +4428,8 @@ UFHZZ4LAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     GENjet_phi_float.clear(); GENjet_phi_float.assign(GENjet_phi.begin(),GENjet_phi.end());
     GENjet_id.clear(); GENjet_id.assign(GENjet_id.begin(),GENjet_id.end());
     GENjet_mass_float.clear(); GENjet_mass_float.assign(GENjet_mass.begin(),GENjet_mass.end());
+    GENjet_hadronFlavour_float.clear(); GENjet_hadronFlavour_float.assign(GENjet_hadronFlavour.begin(),GENjet_hadronFlavour.end());
+    GENjet_partonFlavour_float.clear(); GENjet_partonFlavour_float.assign(GENjet_partonFlavour.begin(),GENjet_partonFlavour.end());
     
     if (isMC) passedEventsTree_All->Fill();
     
@@ -6587,6 +6600,8 @@ void UFHZZ4LAna::bookPassedEventTree(TString treeName, TTree *tree)
     //tree->Branch("GENjet_id",&GENjet_id);
     tree->Branch("GENjet_id",&GENjet_id);
     tree->Branch("GENjet_mass",&GENjet_mass_float);
+    tree->Branch("GENjet_hadronFlavour",&GENjet_hadronFlavour_float);
+    tree->Branch("GENjet_partonFlavour",&GENjet_partonFlavour_float);
     tree->Branch("GENnjets_pt30_eta4p7",&GENnjets_pt30_eta4p7,"GENnjets_pt30_eta4p7/I");
     tree->Branch("GENpt_leadingjet_pt30_eta4p7",&GENpt_leadingjet_pt30_eta4p7,"GENpt_leadingjet_pt30_eta4p7/F");
     tree->Branch("GENnbjets_pt30_eta4p7",&GENnbjets_pt30_eta4p7,"GENnbjets_pt30_eta4p7/I");
@@ -6993,7 +7008,7 @@ void UFHZZ4LAna::setTreeVariables( const edm::Event& iEvent, const edm::EventSet
         jecunc->setJetEta(goodJets[k].eta());
         double jecunc_dn = 1.0-jecunc->getUncertainty(false);
         
-        if (jet_jer->Pt() > 30.0 && fabs(goodJets[k].eta())<4.7) {
+        if (jet_jer->Pt() > jetPtMinCut && fabs(goodJets[k].eta())<4.7) {
             if (isclean_H4l) {
                 pat::Jet goodJets_JECJER_pt30_eta4p7_tmp=goodJets[k];
                 goodJets_JECJER_pt30_eta4p7_tmp.setP4(reco::Particle::PolarLorentzVector(jet_jer->Pt(), jet_jer->Eta(), jet_jer->Phi(), jet_jer->M()));
@@ -7096,10 +7111,10 @@ void UFHZZ4LAna::setTreeVariables( const edm::Event& iEvent, const edm::EventSet
             jet_bTagEffi.push_back(helper.get_bTagEffi(jet_jer->Pt(), jet_jer->Eta(), hbTagEffi));
             jet_cTagEffi.push_back(helper.get_bTagEffi(jet_jer->Pt(), jet_jer->Eta(), hcTagEffi));
             jet_udsgTagEffi.push_back(helper.get_bTagEffi(jet_jer->Pt(), jet_jer->Eta(), hudsgTagEffi));
-        }   // if (jet_jer->Pt() > 30.0 && fabs(goodJets[k].eta())<4.7)
+        }   // if (jet_jer->Pt() > jetPtMinCut && fabs(goodJets[k].eta())<4.7)
         
         // JER up
-        if (jet_jerup->Pt() > 30.0 && fabs(jet_jerup->Eta())<4.7) {
+        if (jet_jerup->Pt() > jetPtMinCut && fabs(jet_jerup->Eta())<4.7) {
             if (isclean_H4l) {
                 njets_pt30_eta4p7_jerup++;
                 jet_jerup_iscleanH4l.push_back((int)jet_jerup_pt.size());
@@ -7129,7 +7144,7 @@ void UFHZZ4LAna::setTreeVariables( const edm::Event& iEvent, const edm::EventSet
         }
         
         // JER dn
-        if (jet_jerdn->Pt() > 30.0 && fabs(jet_jerdn->Eta())<4.7) {
+        if (jet_jerdn->Pt() > jetPtMinCut && fabs(jet_jerdn->Eta())<4.7) {
             if (isclean_H4l) {
                 njets_pt30_eta4p7_jerdn++;
                 jet_jerdn_iscleanH4l.push_back((int)jet_jerdn_pt.size());
@@ -7164,7 +7179,7 @@ void UFHZZ4LAna::setTreeVariables( const edm::Event& iEvent, const edm::EventSet
         double jetE_jesup = sqrt(jetPx_jesup*jetPx_jesup + jetPy_jesup*jetPy_jesup + jetPz_jesup*jetPz_jesup + jet_jer->M()*jet_jer->M());
         TLorentzVector *jet_jesup = new TLorentzVector(jetPx_jesup,jetPy_jesup,jetPz_jesup,jetE_jesup);
         
-        if (jet_jesup->Pt() > 30.0 && fabs(jet_jesup->Eta())<4.7) {
+        if (jet_jesup->Pt() > jetPtMinCut && fabs(jet_jesup->Eta())<4.7) {
             if (isclean_H4l) {
                 njets_pt30_eta4p7_jesup++;
                 jet_jesup_iscleanH4l.push_back((int)jet_jesup_pt.size());
@@ -7201,7 +7216,7 @@ void UFHZZ4LAna::setTreeVariables( const edm::Event& iEvent, const edm::EventSet
         double jetE_jesdn = sqrt(jetPx_jesdn*jetPx_jesdn + jetPy_jesdn*jetPy_jesdn + jetPz_jesdn*jetPz_jesdn + jet_jer->M()*jet_jer->M());
         TLorentzVector *jet_jesdn = new TLorentzVector(jetPx_jesdn,jetPy_jesdn,jetPz_jesdn,jetE_jesdn);
         
-        if (jet_jesdn->Pt() > 30.0 && fabs(jet_jesdn->Eta())<4.7) {
+        if (jet_jesdn->Pt() > jetPtMinCut && fabs(jet_jesdn->Eta())<4.7) {
             if (isclean_H4l) {
                 njets_pt30_eta4p7_jesdn++;
                 jet_jesdn_iscleanH4l.push_back(jet_jesdn_pt.size());
@@ -8258,7 +8273,8 @@ void UFHZZ4LAna::setTreeVariables( const edm::Event& iEvent, const edm::EventSet
 
 void UFHZZ4LAna::setGENVariables(edm::Handle<reco::GenParticleCollection> prunedgenParticles,
                                  edm::Handle<edm::View<pat::PackedGenParticle> > packedgenParticles,
-                                 edm::Handle<edm::View<reco::GenJet> > genJets)
+                                 edm::Handle<edm::View<reco::GenJet> > genJets,
+                                 edm::Handle<reco::JetFlavourInfoMatchingCollection> jetFlavourInfos)
 {
     
     reco::GenParticleCollection::const_iterator genPart;
@@ -8584,8 +8600,9 @@ void UFHZZ4LAna::setGENVariables(edm::Handle<reco::GenParticleCollection> pruned
                 index_tmp++;
                 double pt = genjet->pt();  double eta = genjet->eta();
                 genjet_id = genjet->pdgId();  // needed for bjets
-                if (pt<30.0 || abs(eta)>4.7) continue;
+                if (pt<genJetPtMinCut || abs(eta)>4.7) continue;
                 
+                /*
                 bool inDR_pt30_eta4p7 = false;
                 unsigned int N=GENlep_pt.size();
                 for(unsigned int i = 0; i<N; i++) {
@@ -8598,10 +8615,12 @@ void UFHZZ4LAna::setGENVariables(edm::Handle<reco::GenParticleCollection> pruned
                         inDR_pt30_eta4p7=true;
                     }
                 }
+                */
                 
                 if (verbose) cout<<"check overlap of gen jet with gen leptons"<<endl;
                 // count number of gen jets which no gen leptons are inside its cone
-                if (!inDR_pt30_eta4p7) {
+                // if (!inDR_pt30_eta4p7) {
+                if (true) { // Higgs+charm custom: store all gen-jet
                     GEN_goodJets.push_back(genJets->at(index_tmp));
                     GENnjets_pt30_eta4p7++;
                     GENjet_pt.push_back(genjet->pt());
@@ -8609,6 +8628,19 @@ void UFHZZ4LAna::setGENVariables(edm::Handle<reco::GenParticleCollection> pruned
                     GENjet_eta.push_back(genjet->eta());
                     GENjet_phi.push_back(genjet->phi());
                     GENjet_mass.push_back(genjet->mass());
+                    bool matched = false;
+                    for (const reco::JetFlavourInfoMatching & jetFlavourInfoMatching : *jetFlavourInfos) {
+                        if (deltaR(genjet->p4(), jetFlavourInfoMatching.first->p4()) < 0.1) {
+                            GENjet_hadronFlavour.push_back(jetFlavourInfoMatching.second.getHadronFlavour());
+                            GENjet_partonFlavour.push_back(jetFlavourInfoMatching.second.getPartonFlavour());
+                            matched = true;
+                            break;
+                        }
+                    }
+                    if (!matched) {
+                        GENjet_hadronFlavour.push_back(0);
+                        GENjet_partonFlavour.push_back(0);
+                    }
                     //bjets
                     if (verbose) cout <<"gen jet PDG id is .... "<<genjet_id<<endl;
                     GENjet_id.push_back(genjet_id);
@@ -8639,7 +8671,7 @@ void UFHZZ4LAna::setGENVariables(edm::Handle<reco::GenParticleCollection> pruned
                 TLorentzVector thisGENJet;
                 thisGENJet.SetPtEtaPhiM(GENjet_pt[k],GENjet_eta[k],GENjet_phi[k],GENjet_mass[k]);
                 
-                if (GENjet_pt[k]<30.0 || abs(GENjet_eta[k])>4.7) continue;
+                if (GENjet_pt[k]<genJetPtMinCut || abs(GENjet_eta[k])>4.7) continue;
                 
                 if (thisGENJet.Pt()>GENpTj1) {
                     GENpTj2=GENpTj1; GENjet2index=GENjet1index;

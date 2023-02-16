@@ -2,9 +2,9 @@ import FWCore.ParameterSet.Config as cms
 from FWCore.ParameterSet.VarParsing import VarParsing
 
 process = cms.Process("UFHZZ4LAnalysis")
-# process.options = cms.untracked.PSet(
-#         numberOfThreads = cms.untracked.uint32(2)
-# )
+process.options = cms.untracked.PSet(
+        numberOfThreads = cms.untracked.uint32(2)
+)
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 10000
@@ -292,6 +292,7 @@ process.Ana = cms.EDAnalyzer('UFHZZ4LAna',
                               prunedgenParticlesSrc = cms.untracked.InputTag("prunedGenParticles"),
                               packedgenParticlesSrc = cms.untracked.InputTag("packedGenParticles"),
                               genJetsSrc = cms.untracked.InputTag("slimmedGenJets"),
+                              jetFlavourInfosSrc = cms.untracked.InputTag("slimmedGenJetsFlavourInfos"),
                               generatorSrc = cms.untracked.InputTag("generator"),
                               lheInfoSrc = cms.untracked.InputTag("externalLHEProducer"),
                               reweightForPU = cms.untracked.bool(True),
@@ -324,6 +325,8 @@ process.Ana = cms.EDAnalyzer('UFHZZ4LAna',
                               skimTightLeptons = cms.untracked.int32(4),              
                               bestCandMela = cms.untracked.bool(False),   # for differential measurements
                               storePFCands = cms.untracked.bool(False),
+                              jetPtMinCut = cms.untracked.double(10.),
+                              genJetPtMinCut = cms.untracked.double(10.),
                               year = cms.untracked.int32(2018),####for year put 2016,2017, or 2018 to select correct Muon training and electron MVA
                              )
 
