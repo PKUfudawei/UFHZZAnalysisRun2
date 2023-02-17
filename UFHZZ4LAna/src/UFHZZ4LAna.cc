@@ -140,7 +140,7 @@
 #include "UFHZZAnalysisRun2/UFHZZ4LAna/interface/HZZ4LJets.h"
 
 //nJettiness
-#include "UFHZZAnalysisRun2/UFHZZ4LAna/interface/NJettiness.h"
+// #include "UFHZZAnalysisRun2/UFHZZ4LAna/interface/NJettiness.h"
 
 // Jet energy correction
 #include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
@@ -460,6 +460,7 @@ private:
     vector<float>  pfcand_dptdpt, pfcand_detadeta, pfcand_dphidphi, pfcand_dxydxy, pfcand_dzdz, pfcand_dxydz, pfcand_dphidxy;
     vector<float>  pfcand_dlambdadz, pfcand_mask, pfcand_pt_log_nopuppi, pfcand_e_log_nopuppi;
 
+    /*
     // n-jettiness for additional ak4 jets
     float TauC_Inc_0j, TauC_JetConstituents_0j, TauCnoHRapidity_JetConstituents_0j, TauCnoHRapidity_Inc_0j;
     float TauB_Inc_0j, TauB_JetConstituents_0j, TauBnoHRapidity_JetConstituents_0j, TauBnoHRapidity_Inc_0j;
@@ -509,11 +510,13 @@ private:
     float TauC_JetConstituents_2j_CorrRapidity;
     float TauCnoHRapidity_JetConstituents_2j_CorrRapidity;
     float TauCnoHRapidity_Inc_2j_CorrRapidity;
+    */
 
 /**
 _EnergyWgt
  * { item_description }
  */
+    /*
     float TauC_Inc_0j_CorrRapidity_pTWgt;
     float TauB_Inc_0j_CorrRapidity_pTWgt;
     float TauBnoHRapidity_Inc_0j_CorrRapidity_pTWgt;
@@ -577,11 +580,13 @@ _EnergyWgt
     float GeneralizedTau0_noHRapidity;
     float GeneralizedTau1_noHRapidity;
     float GeneralizedTau2_noHRapidity;
+    */
 
 /**
  *  GEN n-jettiness variables
  */
 
+    /*
  // n-jettiness for additional ak4 jets
     float GEN_TauC_Inc_0j, GEN_TauC_JetConstituents_0j, GEN_TauCnoHRapidity_JetConstituents_0j, GEN_TauCnoHRapidity_Inc_0j;
     float GEN_TauB_Inc_0j, GEN_TauB_JetConstituents_0j, GEN_TauBnoHRapidity_JetConstituents_0j, GEN_TauBnoHRapidity_Inc_0j;
@@ -631,11 +636,13 @@ _EnergyWgt
     float GEN_TauC_JetConstituents_2j_CorrRapidity;
     float GEN_TauCnoHRapidity_JetConstituents_2j_CorrRapidity;
     float GEN_TauCnoHRapidity_Inc_2j_CorrRapidity;
+    */
 
 /**
 _EnergyWgt
  * { item_description }
  */
+    /*
     float GEN_TauC_Inc_0j_CorrRapidity_pTWgt;
     float GEN_TauB_Inc_0j_CorrRapidity_pTWgt;
     float GEN_TauBnoHRapidity_Inc_0j_CorrRapidity_pTWgt;
@@ -699,6 +706,7 @@ _EnergyWgt
     float GEN_GeneralizedTau0_noHRapidity;
     float GEN_GeneralizedTau1_noHRapidity;
     float GEN_GeneralizedTau2_noHRapidity;
+    */
 
 
     // new nominal
@@ -1855,6 +1863,7 @@ UFHZZ4LAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     pfcand_dptdpt.clear(); pfcand_detadeta.clear(); pfcand_dphidphi.clear(); pfcand_dxydxy.clear(); pfcand_dzdz.clear(); pfcand_dxydz.clear(); pfcand_dphidxy.clear(); 
     pfcand_dlambdadz.clear(); pfcand_mask.clear(); pfcand_pt_log_nopuppi.clear(); pfcand_e_log_nopuppi.clear(); 
 
+    /*
     // n-jettiness for additional ak4 jets _pTWgt
     TauC_Inc_0j=-9999.0;
     TauC_Inc_1j=-9999.0;
@@ -1908,11 +1917,13 @@ UFHZZ4LAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     TauC_JetConstituents_2j_CorrRapidity = -9999.0;
     TauCnoHRapidity_JetConstituents_2j_CorrRapidity = -9999.0;
     TauCnoHRapidity_Inc_2j_CorrRapidity = -9999.0;
+    */
 
 /**
  * { item_description }
  */
 
+    /*
     TauC_Inc_0j_pTWgt = -9999.0;
     TauC_Inc_1j_pTWgt = -9999.0;
     TauC_Inc_2j_pTWgt = -9999.0;
@@ -2022,11 +2033,12 @@ UFHZZ4LAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     GeneralizedTau0_noHRapidity=-9999.0;
     GeneralizedTau1_noHRapidity=-9999.0;
     GeneralizedTau2_noHRapidity=-9999.0;
+    */
 
 /***
  *  GEN n-jettiness variables
  */
-
+    /*
     // n-jettiness for additional ak4 jets _pTWgt
     GEN_TauC_Inc_0j=-9999.0;
     GEN_TauC_Inc_1j=-9999.0;
@@ -2080,11 +2092,13 @@ UFHZZ4LAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     GEN_TauC_JetConstituents_2j_CorrRapidity = -9999.0;
     GEN_TauCnoHRapidity_JetConstituents_2j_CorrRapidity = -9999.0;
     GEN_TauCnoHRapidity_Inc_2j_CorrRapidity = -9999.0;
+    */
 
 /**
  * { item_description }
  */
 
+    /*
     GEN_TauC_Inc_0j_pTWgt = -9999.0;
     GEN_TauC_Inc_1j_pTWgt = -9999.0;
     GEN_TauC_Inc_2j_pTWgt = -9999.0;
@@ -2194,6 +2208,7 @@ UFHZZ4LAna::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     GEN_GeneralizedTau0_noHRapidity=-9999.0;
     GEN_GeneralizedTau1_noHRapidity=-9999.0;
     GEN_GeneralizedTau2_noHRapidity=-9999.0;
+    */
 
     // new obs. initialization
         // new nominal
@@ -6108,6 +6123,7 @@ void UFHZZ4LAna::bookPassedEventTree(TString treeName, TTree *tree)
         tree->Branch("pfcand_e_log_nopuppi",&pfcand_e_log_nopuppi);
     }
 
+    /*
     // n-jettiness  noHRapidity _pTWgt
     tree->Branch("TauB_Inc_0j",&TauB_Inc_0j,"TauB_Inc_0j/F");
     tree->Branch("TauBnoHRapidity_Inc_0j",&TauBnoHRapidity_Inc_0j,"TauBnoHRapidity_Inc_0j/F");
@@ -6163,11 +6179,12 @@ void UFHZZ4LAna::bookPassedEventTree(TString treeName, TTree *tree)
     tree->Branch("TauC_JetConstituents_2j_CorrRapidity",&TauC_JetConstituents_2j_CorrRapidity,"TauC_JetConstituents_2j_CorrRapidity/F");
     tree->Branch("TauCnoHRapidity_JetConstituents_2j_CorrRapidity",&TauCnoHRapidity_JetConstituents_2j_CorrRapidity,"TauCnoHRapidity_JetConstituents_2j_CorrRapidity/F");
     tree->Branch("TauCnoHRapidity_Inc_2j_CorrRapidity",&TauCnoHRapidity_Inc_2j_CorrRapidity,"TauCnoHRapidity_Inc_2j_CorrRapidity/F");
-
+    */
 /**
  * _pTWgt
  */
 
+    /*
     tree->Branch("TauB_Inc_0j_pTWgt",&TauB_Inc_0j_pTWgt,"TauB_Inc_0j_pTWgt/F");
     tree->Branch("TauBnoHRapidity_Inc_0j_pTWgt",&TauBnoHRapidity_Inc_0j_pTWgt,"TauBnoHRapidity_Inc_0j_pTWgt/F");
     tree->Branch("TauB_JetConstituents_0j_pTWgt",&TauB_JetConstituents_0j_pTWgt,"TauB_JetConstituents_0j_pTWgt/F");
@@ -6278,11 +6295,13 @@ void UFHZZ4LAna::bookPassedEventTree(TString treeName, TTree *tree)
     tree->Branch("GeneralizedTau0_noHRapidity",&GeneralizedTau0_noHRapidity,"GeneralizedTau0_noHRapidity/F");
     tree->Branch("GeneralizedTau1_noHRapidity",&GeneralizedTau1_noHRapidity,"GeneralizedTau1_noHRapidity/F");
     tree->Branch("GeneralizedTau2_noHRapidity",&GeneralizedTau2_noHRapidity,"GeneralizedTau2_noHRapidity/F");
+    */
 
 /**
  *  GEN nJettiness
  */
 
+    /*
     // n-jettiness  noHRapidity _pTWgt
     tree->Branch("GEN_TauB_Inc_0j",&GEN_TauB_Inc_0j,"GEN_TauB_Inc_0j/F");
     tree->Branch("GEN_TauBnoHRapidity_Inc_0j",&GEN_TauBnoHRapidity_Inc_0j,"GEN_TauBnoHRapidity_Inc_0j/F");
@@ -6338,11 +6357,13 @@ void UFHZZ4LAna::bookPassedEventTree(TString treeName, TTree *tree)
     tree->Branch("GEN_TauC_JetConstituents_2j_CorrRapidity",&GEN_TauC_JetConstituents_2j_CorrRapidity,"GEN_TauC_JetConstituents_2j_CorrRapidity/F");
     tree->Branch("GEN_TauCnoHRapidity_JetConstituents_2j_CorrRapidity",&GEN_TauCnoHRapidity_JetConstituents_2j_CorrRapidity,"GEN_TauCnoHRapidity_JetConstituents_2j_CorrRapidity/F");
     tree->Branch("GEN_TauCnoHRapidity_Inc_2j_CorrRapidity",&GEN_TauCnoHRapidity_Inc_2j_CorrRapidity,"GEN_TauCnoHRapidity_Inc_2j_CorrRapidity/F");
+    */
 
 /**
  * _pTWgt
  */
 
+    /*
     tree->Branch("GEN_TauB_Inc_0j_pTWgt",&GEN_TauB_Inc_0j_pTWgt,"GEN_TauB_Inc_0j_pTWgt/F");
     tree->Branch("GEN_TauBnoHRapidity_Inc_0j_pTWgt",&GEN_TauBnoHRapidity_Inc_0j_pTWgt,"GEN_TauBnoHRapidity_Inc_0j_pTWgt/F");
     tree->Branch("GEN_TauB_JetConstituents_0j_pTWgt",&GEN_TauB_JetConstituents_0j_pTWgt,"GEN_TauB_JetConstituents_0j_pTWgt/F");
@@ -6391,9 +6412,11 @@ void UFHZZ4LAna::bookPassedEventTree(TString treeName, TTree *tree)
     tree->Branch("GEN_TauC_JetConstituents_2j_CorrRapidity_pTWgt",&GEN_TauC_JetConstituents_2j_CorrRapidity_pTWgt,"GEN_TauC_JetConstituents_2j_CorrRapidity_pTWgt/F");
     tree->Branch("GEN_TauCnoHRapidity_JetConstituents_2j_CorrRapidity_pTWgt",&GEN_TauCnoHRapidity_JetConstituents_2j_CorrRapidity_pTWgt,"GEN_TauCnoHRapidity_JetConstituents_2j_CorrRapidity_pTWgt/F");
     tree->Branch("GEN_TauCnoHRapidity_Inc_2j_CorrRapidity_pTWgt",&GEN_TauCnoHRapidity_Inc_2j_CorrRapidity_pTWgt,"GEN_TauCnoHRapidity_Inc_2j_CorrRapidity_pTWgt/F");
+    */
 
 //
 
+    /*
     tree->Branch("GEN_TauB_Inc_0j_EnergyWgt",&GEN_TauB_Inc_0j_EnergyWgt,"GEN_TauB_Inc_0j_EnergyWgt/F");
     tree->Branch("GEN_TauBnoHRapidity_Inc_0j_EnergyWgt",&GEN_TauBnoHRapidity_Inc_0j_EnergyWgt,"GEN_TauBnoHRapidity_Inc_0j_EnergyWgt/F");
     tree->Branch("GEN_TauB_JetConstituents_0j_EnergyWgt",&GEN_TauB_JetConstituents_0j_EnergyWgt,"GEN_TauB_JetConstituents_0j_EnergyWgt/F");
@@ -6453,7 +6476,7 @@ void UFHZZ4LAna::bookPassedEventTree(TString treeName, TTree *tree)
     tree->Branch("GEN_GeneralizedTau0_noHRapidity",&GEN_GeneralizedTau0_noHRapidity,"GEN_GeneralizedTau0_noHRapidity/F");
     tree->Branch("GEN_GeneralizedTau1_noHRapidity",&GEN_GeneralizedTau1_noHRapidity,"GEN_GeneralizedTau1_noHRapidity/F");
     tree->Branch("GEN_GeneralizedTau2_noHRapidity",&GEN_GeneralizedTau2_noHRapidity,"GEN_GeneralizedTau2_noHRapidity/F");
-
+    */
 
 
     // merged jets
@@ -7780,6 +7803,7 @@ void UFHZZ4LAna::setTreeVariables( const edm::Event& iEvent, const edm::EventSet
          * For zero jet scenario
          */
 
+        /* Remove N-jettiness calculation
         NJettiness CalculateNJettinessVar;
         // double Taub = CalculateNJettinessVar.GeneralizedTaunN(pfCands, jets, 1.0, 1.0);
         // Tau0 = Taub;
@@ -7988,9 +8012,11 @@ void UFHZZ4LAna::setTreeVariables( const edm::Event& iEvent, const edm::EventSet
              TauCnoHRapidity_JetConstituents_2j_CorrRapidity,
              0 // nJettinessSize_temp; use this if don't want to use all available good jets
             );
+            */
 
 //***************************************
 
+        /*
         CalculateNJettinessVar.New_GetRapidityWeightedValues_pTWeighted(
              0,  // NJettiness, // this depends on the jettiness that we would like to use
              goodJets_JECJER_pt30_eta4p7,   // Fixed don't change
@@ -8125,10 +8151,12 @@ void UFHZZ4LAna::setTreeVariables( const edm::Event& iEvent, const edm::EventSet
              TauCnoHRapidity_JetConstituents_2j_CorrRapidity_pTWgt,
              0 // nJettinessSize_temp; use this if don't want to use all available good jets
             );
+        */
 
 
 //***************************************
 
+        /*
         CalculateNJettinessVar.New_GetRapidityWeightedValues_pTWeighted_UsingEnergy(
              0,  // NJettiness, // this depends on the jettiness that we would like to use
              goodJets_JECJER_pt30_eta4p7,   // Fixed don't change
@@ -8263,6 +8291,7 @@ void UFHZZ4LAna::setTreeVariables( const edm::Event& iEvent, const edm::EventSet
              TauCnoHRapidity_JetConstituents_2j_CorrRapidity_EnergyWgt,
              0 // nJettinessSize_temp; use this if don't want to use all available good jets
             );
+        */
 
         /**
          * END: nJettiness variable
@@ -8879,6 +8908,7 @@ void UFHZZ4LAna::setGENVariables(edm::Handle<reco::GenParticleCollection> pruned
          * For zero jet scenario
          */
 
+        /*
         NJettiness CalculateNJettinessVar;
         // double Taub = CalculateNJettinessVar.GeneralizedTaunN(pfCands, jets, 1.0, 1.0);
         // Tau0 = Taub; 
@@ -9085,9 +9115,11 @@ void UFHZZ4LAna::setGENVariables(edm::Handle<reco::GenParticleCollection> pruned
              GEN_TauCnoHRapidity_JetConstituents_2j_CorrRapidity,
              0 // nJettinessSize_temp; use this if don't want to use all available good jets
             );
+        */
 
 //***************************************
 
+        /*
         CalculateNJettinessVar.New_GetRapidityWeightedValues_pTWeighted(
              0,  // NJettiness, // this depends on the jettiness that we would like to use
              GEN_goodJets,   // Fixed don't change
@@ -9222,11 +9254,13 @@ void UFHZZ4LAna::setGENVariables(edm::Handle<reco::GenParticleCollection> pruned
              GEN_TauCnoHRapidity_JetConstituents_2j_CorrRapidity_pTWgt,
              0 // nJettinessSize_temp; use this if don't want to use all available good jets
             );
+        */
 
 //***************************************
         if (verbose)
             std::cout<<"N_GEN_goodJet: "<<GEN_goodJets.size()<<"; N_GENnjets_pt30_eta4p7: "<<GENnjets_pt30_eta4p7<<std::endl;
 
+        /*
         CalculateNJettinessVar.New_GetRapidityWeightedValues_pTWeighted_UsingEnergy(
              0,  // NJettiness, // this depends on the jettiness that we would like to use
              GEN_goodJets,   // Fixed don't change
@@ -9363,6 +9397,7 @@ void UFHZZ4LAna::setGENVariables(edm::Handle<reco::GenParticleCollection> pruned
              GEN_TauCnoHRapidity_JetConstituents_2j_CorrRapidity_EnergyWgt,
              0 // nJettinessSize_temp; use this if don't want to use all available good jets
             );
+        */
 
         /**
          * END: nJettiness variable
